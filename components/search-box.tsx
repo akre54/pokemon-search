@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { gql, useLazyQuery } from '@apollo/client'
 import AddIcon from '@mui/icons-material/Add'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -36,6 +36,7 @@ function isClickable(team: Team, id: number) {
 }
 
 export function SearchBox({pokemon}: Props) {
+  const [value, setValue] = useState('')
   const team = useStore(state => state.team)
   const addToTeam = useStore(state => state.addToTeam)
 
@@ -51,19 +52,28 @@ export function SearchBox({pokemon}: Props) {
   return (
     <Autocomplete
       sx={{ width: 300 }}
+      value={value}
       options={pokemon}
       loading={loading}
       autoSelect
       blurOnSelect
       clearOnBlur
       clearOnEscape
+      onInputChange={(_, text, reason) => {
+        if (reason === 'reset') {
+          setValue('')
+          return
+        } else {
+          setValue(text)
+        }
+      }}
       onChange={(_, option: Pokemon) => {
         if (option && isClickable(team, option.id)) {
           addToTeam(option.id)
         }
       }}
       ListboxComponent={ListboxComponent}
-      getOptionLabel={(option: Pokemon) => option.name}
+      getOptionLabel={(option: Pokemon | string) => typeof option === 'string' ? option : option.name}
       renderOption={(props, pokemon) => ({props, pokemon, team} as any) }
       renderInput={(params) => (
         <TextField
